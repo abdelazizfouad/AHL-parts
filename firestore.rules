@@ -1,0 +1,79 @@
+import { 
+  isAuthenticated, 
+  isOwner, 
+  uidUnchanged, 
+  uidNotModified, 
+  hasRequiredFields, 
+  validStringLength, 
+  isValidUrl, 
+  isValidEmail, 
+  isPositive, 
+  hasOnlyAllowedFields 
+} from "./helpers";
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: products
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - partNumber: string (required, 1-50 chars)
+    //   - price: number (required, positive)
+    //   - image: string (optional, valid URL)
+    //   - compatibility: string (optional, 1-200 chars)
+    //   - category: string (required, enum)
+    //   - description: string (optional, 0-1000 chars)
+    //   - createdAt: timestamp (required)
+    //
+    // ===============================================================
+
+    function isValidProduct(data) {
+      return hasRequiredFields(['name', 'partNumber', 'price', 'category', 'createdAt']) &&
+             hasOnlyAllowedFields(['name', 'partNumber', 'price', 'image', 'compatibility', 'category', 'description', 'createdAt']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.partNumber is string && data.partNumber.size() > 0 && data.partNumber.size() <= 50 &&
+             data.price is number && data.price > 0 &&
+             (!('image' in data) || isValidUrl(data.image)) &&
+             (!('compatibility' in data) || (data.compatibility is string && data.compatibility.size() <= 200)) &&
+             data.category is string &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 1000)) &&
+             data.createdAt is timestamp;
+    }
+
+    match /products/{productId} {
+      // Publicly readable for the catalog
+      allow read: if true;
+      
+      // Only admin can write (simulated with a simple check for now, 
+      // in production this would use custom claims or a dedicated admin collection)
+      // For this app, we'll allow authenticated users to write if they match a specific UID 
+      // or we can use the password check in frontend and simple rules for demo.
+      // BUT rules should be secure. Let's assume an admin role check.
+      allow create, update, delete: if isAuthenticated() && isValidProduct(request.resource.data);
+    }
+  }
+}

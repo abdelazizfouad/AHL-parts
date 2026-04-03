@@ -1,0 +1,26 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A Mercedes-Benz spare part",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the part" },
+        "partNumber": { "type": "string", "description": "Manufacturer part number" },
+        "price": { "type": "number", "description": "Price in LYD" },
+        "image": { "type": "string", "description": "URL to the product image" },
+        "compatibility": { "type": "string", "description": "Compatible Mercedes models (e.g., W204, W212)" },
+        "category": { "type": "string", "description": "Part category (e.g., Engine, Suspension, Brake)" },
+        "description": { "type": "string", "description": "Detailed description of the part" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["name", "partNumber", "price", "category"]
+    }
+  },
+  "firestore": {
+    "/products": {
+      "schema": "Product",
+      "description": "Collection of available spare parts"
+    }
+  }
+}
