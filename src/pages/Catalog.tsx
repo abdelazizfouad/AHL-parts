@@ -11,7 +11,7 @@ export default function Catalog() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -115,7 +115,7 @@ export default function Catalog() {
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                  <label className="block text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-4">Price Range (LYD)</label>
+                  <label className="block text-zinc-500 text-[10px] font-bold uppercase tracking-widest mb-4">Price Range (EGP)</label>
                   <div className="flex items-center gap-4">
                     <input 
                       type="number" 
@@ -184,6 +184,7 @@ export default function Catalog() {
                     alt={product.name}
                     className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"
                     referrerPolicy="no-referrer"
+                    loading="lazy"
                   />
                   <div className="absolute top-2 right-2 bg-black/80 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-widest">
                     {product.category}
@@ -197,10 +198,11 @@ export default function Catalog() {
                     {product.name}
                   </Link>
                   <div className="flex items-center justify-between mt-4">
-                    <span className="text-xl font-bold text-white">{product.price} <span className="text-xs text-zinc-500">LYD</span></span>
+                    <span className="text-xl font-bold text-white">{product.price.toLocaleString()} <span className="text-xs text-zinc-500 font-bold">ج.م</span></span>
                     <Link 
                       to={`/product/${product.id}`}
                       className="p-2 bg-white text-black rounded-sm hover:bg-zinc-200 transition-colors"
+                      title="View Details"
                     >
                       <ShoppingCart size={18} />
                     </Link>

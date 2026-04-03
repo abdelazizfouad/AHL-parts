@@ -24,7 +24,7 @@ export default function Cart() {
 
   const whatsappMessage = () => {
     const itemsList = cartItems.map(item => `- ${item.name} (${item.partNumber})`).join('\n');
-    return encodeURIComponent(`Hello Ashraf & Hesham, I'd like to order:\n\n${itemsList}\n\nTotal: ${total} LYD`);
+    return encodeURIComponent(`Hello Ashraf & Hesham, I'd like to order:\n\n${itemsList}\n\nTotal: ${total.toLocaleString()} ج.م`);
   };
 
   if (cartItems.length === 0) {
@@ -80,7 +80,7 @@ export default function Cart() {
                     <div className="text-zinc-400 text-sm mt-1">{item.category}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-white font-bold text-lg mb-2">{item.price} LYD</div>
+                    <div className="text-white font-bold text-lg mb-2">{item.price.toLocaleString()} ج.م</div>
                     <button 
                       onClick={() => removeItem(index)}
                       className="text-zinc-500 hover:text-red-500 transition-colors p-2"
@@ -99,7 +99,7 @@ export default function Cart() {
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between text-zinc-400">
                   <span>Subtotal</span>
-                  <span>{total} LYD</span>
+                  <span>{total.toLocaleString()} ج.م</span>
                 </div>
                 <div className="flex justify-between text-zinc-400">
                   <span>Shipping</span>
@@ -107,7 +107,7 @@ export default function Cart() {
                 </div>
                 <div className="pt-4 border-t border-zinc-800 flex justify-between text-white font-bold text-xl">
                   <span>Total</span>
-                  <span>{total} LYD</span>
+                  <span>{total.toLocaleString()} ج.م</span>
                 </div>
               </div>
               

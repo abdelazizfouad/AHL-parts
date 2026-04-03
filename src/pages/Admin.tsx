@@ -122,38 +122,68 @@ export default function Admin() {
   const seedSampleData = async () => {
     const samples: Omit<Product, 'id'>[] = [
       {
-        name: "Mercedes E-Class W213 LED Headlight",
+        name: "Mercedes E-Class W213 LED Headlight (Right)",
         partNumber: "A2139064104",
-        price: 4500,
+        price: 25000,
         image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=800",
         compatibility: "W213 (2016-2020)",
         category: "Electrical & Lighting",
-        description: "Genuine high-performance LED headlight for Mercedes-Benz E-Class.",
+        description: "Genuine high-performance LED headlight for Mercedes-Benz E-Class. Right side assembly.",
         createdAt: new Date()
       },
       {
-        name: "AMG Performance Brake Pads Set",
+        name: "AMG Performance Brake Pads Set (Front)",
         partNumber: "A0004206000",
-        price: 1200,
+        price: 8500,
         image: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&q=80&w=800",
         compatibility: "C63, E63, S63 AMG Models",
         category: "Brakes",
-        description: "Original AMG brake pads for superior stopping power and durability.",
+        description: "Original AMG brake pads for superior stopping power and durability. Front axle set.",
         createdAt: new Date()
       },
       {
         name: "Mercedes-Benz M274 Oil Filter",
         partNumber: "A2701800109",
-        price: 150,
+        price: 950,
         image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=800",
         compatibility: "M270, M274 Engines",
         category: "Oil & Fluids",
         description: "Genuine oil filter for optimal engine protection and performance.",
         createdAt: new Date()
+      },
+      {
+        name: "Air Suspension Compressor",
+        partNumber: "A2213201704",
+        price: 18000,
+        image: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?auto=format&fit=crop&q=80&w=800",
+        compatibility: "S-Class W221",
+        category: "Suspension",
+        description: "OEM Air suspension compressor pump for Mercedes S-Class W221.",
+        createdAt: new Date()
+      },
+      {
+        name: "Turbocharger Assembly",
+        partNumber: "A2710903680",
+        price: 42000,
+        image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=800",
+        compatibility: "C-Class W204 C250",
+        category: "Engine & Drivetrain",
+        description: "Genuine turbocharger for M271 EVO engines. High boost efficiency.",
+        createdAt: new Date()
+      },
+      {
+        name: "Spark Plug Set (4pcs)",
+        partNumber: "A0041598103",
+        price: 2400,
+        image: "https://images.unsplash.com/photo-1635437536607-b8572f443763?auto=format&fit=crop&q=80&w=800",
+        compatibility: "Various Models (M270, M274)",
+        category: "Engine & Drivetrain",
+        description: "Iridium spark plugs for better ignition and fuel efficiency.",
+        createdAt: new Date()
       }
     ];
 
-    if (window.confirm('Add 3 sample Mercedes parts to the catalog?')) {
+    if (window.confirm('Add 6 genuine Mercedes parts to the catalog?')) {
       try {
         for (const sample of samples) {
           await addDoc(collection(db, 'products'), sample);
@@ -279,13 +309,13 @@ export default function Admin() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Price (LYD)</label>
+                      <label className="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Price (EGP)</label>
                       <div className="relative">
-                        <DollarSign className="absolute left-3 top-3 text-zinc-600" size={18} />
+                        <span className="absolute left-3 top-3 text-zinc-600 text-sm font-bold">ج.م</span>
                         <input
                           required
                           type="number"
-                          className="w-full bg-black border border-zinc-700 text-white pl-10 pr-4 py-3 rounded-sm focus:outline-none focus:border-white"
+                          className="w-full bg-black border border-zinc-700 text-white pl-12 pr-4 py-3 rounded-sm focus:outline-none focus:border-white"
                           value={formData.price}
                           onChange={(e) => setFormData({...formData, price: Number(e.target.value)})}
                         />
@@ -393,7 +423,7 @@ export default function Admin() {
                         {product.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-white font-bold">{product.price} LYD</td>
+                    <td className="px-6 py-4 text-white font-bold">{product.price.toLocaleString()} ج.م</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <button 

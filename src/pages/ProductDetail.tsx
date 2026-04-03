@@ -84,7 +84,7 @@ export default function ProductDetail() {
             <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">{product.name}</h1>
             
             <div className="text-3xl font-bold text-white mb-8">
-              {product.price} <span className="text-sm text-zinc-500 font-normal">LYD</span>
+              {product.price.toLocaleString()} <span className="text-sm text-zinc-500 font-bold">ج.م</span>
             </div>
 
             <div className="space-y-6 mb-10">

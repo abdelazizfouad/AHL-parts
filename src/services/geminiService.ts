@@ -11,27 +11,45 @@ export interface VINInfo {
   transmission: string;
   bodyStyle: string;
   recommendedParts: string[];
+  partInfo?: {
+    name: string;
+    description: string;
+    estimatedPriceRange: string;
+  };
 }
 
-export async function decodeVIN(vin: string): Promise<VINInfo | null> {
-  if (!vin || vin.length !== 17) return null;
+export async function decodeVIN(input: string): Promise<VINInfo | null> {
+  if (!input) return null;
+
+  const isVIN = input.length === 17;
 
   try {
+    const prompt = isVIN 
+      ? `Decode this Mercedes-Benz VIN: ${input}. Provide real technical details. 
+         If you can't find the exact car, provide the most likely details for a Mercedes with this VIN pattern.`
+      : `Provide technical details for this Mercedes-Benz part number: ${input}. 
+         Explain what this part is and which models it fits.`;
+
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Decode this Mercedes-Benz VIN: ${vin}. 
+      contents: `${prompt}
       Provide the following details in JSON format:
       {
         "make": "Mercedes-Benz",
-        "model": "e.g. E-Class",
-        "year": "e.g. 2015",
-        "engine": "e.g. 3.5L V6",
-        "trim": "e.g. E350",
-        "transmission": "e.g. 7-Speed Automatic",
+        "model": "e.g. E-Class W213",
+        "year": "e.g. 2018",
+        "engine": "e.g. 2.0L I4 Turbo",
+        "trim": "e.g. E300",
+        "transmission": "e.g. 9G-TRONIC",
         "bodyStyle": "e.g. Sedan",
-        "recommendedParts": ["Oil Filter", "Brake Pads", "Air Filter"]
+        "recommendedParts": ["Brake Pads", "Oil Filter", "Air Filter"],
+        "partInfo": {
+          "name": "Name of the part if searching by part number",
+          "description": "Technical description",
+          "estimatedPriceRange": "e.g. 5000 - 8000 EGP"
+        }
       }
-      If the VIN is invalid, return an error object.`,
+      If the input is invalid or not related to Mercedes-Benz, return an error object.`,
       config: {
         responseMimeType: "application/json"
       }

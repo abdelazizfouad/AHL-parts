@@ -50,11 +50,11 @@ export default function Home() {
           >
             <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-white mb-6">
               ASHRAF & <br />
-              <span className="text-zinc-500">HESHAMLIBYA. EG</span>
+              <span className="text-zinc-500 uppercase">Hesham Libya. eg</span>
             </h1>
             <p className="text-lg text-zinc-400 mb-8 leading-relaxed">
               Genuine Mercedes-Benz spare parts for those who demand nothing but perfection. 
-              Serving the Libyan automotive market with integrity and expertise.
+              Serving the Egyptian automotive market with integrity and expertise.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4">
@@ -89,11 +89,10 @@ export default function Home() {
                 <form onSubmit={handleVinSearch} className="relative mb-6">
                   <input
                     type="text"
-                    placeholder="Enter 17-digit VIN or Part Number..."
+                    placeholder="Enter 17-digit VIN or Part Number (e.g. A213...)"
                     className="w-full bg-black border border-zinc-700 text-white px-6 py-4 rounded-sm focus:outline-none focus:border-white transition-colors"
                     value={vin}
                     onChange={(e) => setVin(e.target.value.toUpperCase())}
-                    maxLength={17}
                   />
                   <button 
                     type="submit"
@@ -112,34 +111,56 @@ export default function Home() {
                       exit={{ opacity: 0, height: 0 }}
                       className="bg-black border border-zinc-700 p-6 rounded-sm mb-6"
                     >
-                      <div className="flex items-center gap-2 text-white font-bold mb-4">
-                        <Info size={18} className="text-zinc-500" />
-                        Vehicle Identified: {vinInfo.year} {vinInfo.model}
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm mb-6">
-                        <div>
-                          <span className="text-zinc-500 block">Engine</span>
-                          <span className="text-white">{vinInfo.engine}</span>
+                      {vinInfo.partInfo ? (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2 text-white font-bold">
+                            <Package size={18} className="text-zinc-500" />
+                            Part Identified: {vinInfo.partInfo.name}
+                          </div>
+                          <p className="text-zinc-400 text-sm">{vinInfo.partInfo.description}</p>
+                          <div className="bg-zinc-900 p-3 rounded-sm">
+                            <span className="text-zinc-500 text-xs block uppercase tracking-widest mb-1">Estimated Price</span>
+                            <span className="text-white font-bold">{vinInfo.partInfo.estimatedPriceRange}</span>
+                          </div>
+                          <button 
+                            onClick={() => navigate(`/catalog?search=${vin}`)}
+                            className="w-full bg-white text-black py-3 rounded-sm text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                          >
+                            Search in Catalog
+                          </button>
                         </div>
-                        <div>
-                          <span className="text-zinc-500 block">Transmission</span>
-                          <span className="text-white">{vinInfo.transmission}</span>
-                        </div>
-                        <div>
-                          <span className="text-zinc-500 block">Trim</span>
-                          <span className="text-white">{vinInfo.trim}</span>
-                        </div>
-                        <div>
-                          <span className="text-zinc-500 block">Body Style</span>
-                          <span className="text-white">{vinInfo.bodyStyle}</span>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => navigate(`/catalog?search=${vinInfo.model}`)}
-                        className="w-full bg-zinc-800 text-white py-3 rounded-sm text-xs font-bold uppercase tracking-widest hover:bg-zinc-700 transition-colors"
-                      >
-                        Find Parts for this {vinInfo.model}
-                      </button>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2 text-white font-bold mb-4">
+                            <Info size={18} className="text-zinc-500" />
+                            Vehicle Identified: {vinInfo.year} {vinInfo.model}
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 text-sm mb-6">
+                            <div>
+                              <span className="text-zinc-500 block">Engine</span>
+                              <span className="text-white">{vinInfo.engine}</span>
+                            </div>
+                            <div>
+                              <span className="text-zinc-500 block">Transmission</span>
+                              <span className="text-white">{vinInfo.transmission}</span>
+                            </div>
+                            <div>
+                              <span className="text-zinc-500 block">Trim</span>
+                              <span className="text-white">{vinInfo.trim}</span>
+                            </div>
+                            <div>
+                              <span className="text-zinc-500 block">Body Style</span>
+                              <span className="text-white">{vinInfo.bodyStyle}</span>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => navigate(`/catalog?search=${vinInfo.model}`)}
+                            className="w-full bg-zinc-800 text-white py-3 rounded-sm text-xs font-bold uppercase tracking-widest hover:bg-zinc-700 transition-colors"
+                          >
+                            Find Parts for this {vinInfo.model}
+                          </button>
+                        </>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -184,7 +205,7 @@ export default function Home() {
                 <ArrowRight className="text-white" size={32} />
               </div>
               <h3 className="text-xl font-bold text-white mb-4">Fast Delivery</h3>
-              <p className="text-zinc-400 text-sm">Reliable shipping across Tripoli, Benghazi, and all of Libya.</p>
+              <p className="text-zinc-400 text-sm">Reliable shipping across Cairo, Alexandria, and all of Egypt.</p>
             </div>
           </div>
         </div>
