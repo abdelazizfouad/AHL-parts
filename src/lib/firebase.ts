@@ -13,6 +13,7 @@ import {
   onSnapshot
 } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -29,11 +30,16 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
 export { 
   db, 
   auth,
+  storage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
   googleProvider,
   signInWithPopup,
   signOut,

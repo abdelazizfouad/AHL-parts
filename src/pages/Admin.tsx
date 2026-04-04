@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  deleteDoc, 
-  doc, 
-  updateDoc, 
   db,
-  onSnapshot
+  storage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  onSnapshot,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc
 } from '../lib/firebase';
 import { Product, CATEGORIES } from '../types';
-import { Plus, Trash2, Edit2, Loader2, ShieldAlert, LogOut, Package, Image as ImageIcon, Tag, DollarSign, PenTool } from 'lucide-react';
+import { Plus, Trash2, Edit2, Loader2, ShieldAlert, LogOut, Package, Image as ImageIcon, Tag, DollarSign, PenTool, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Admin() {
@@ -20,6 +24,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   
   const [formData, setFormData] = useState<Omit<Product, 'id'>>({
     name: '',
@@ -61,6 +66,24 @@ export default function Admin() {
   const handleLogout = () => {
     setIsLoggedIn(false);
     localStorage.removeItem('admin_logged');
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      setFormData(prev => ({ ...prev, image: url }));
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Failed to upload image. Try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,23 +145,43 @@ export default function Admin() {
   const seedSampleData = async () => {
     const samples: Omit<Product, 'id'>[] = [
       {
-        name: "Mercedes E-Class W213 LED Headlight (Right)",
-        partNumber: "A2139064104",
-        price: 25000,
+        name: "AMG Performance Steering Wheel",
+        partNumber: "A2054605902",
+        price: 35000,
         image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=800",
-        compatibility: "W213 (2016-2020)",
-        category: "Electrical & Lighting",
-        description: "Genuine high-performance LED headlight for Mercedes-Benz E-Class. Right side assembly.",
+        compatibility: "C-Class W205, E-Class W213",
+        category: "Interior",
+        description: "Genuine AMG performance steering wheel with paddle shifters and Nappa leather.",
         createdAt: new Date()
       },
       {
-        name: "AMG Performance Brake Pads Set (Front)",
+        name: "Mercedes-Benz Brake Disc (Front)",
+        partNumber: "A0004211212",
+        price: 11500,
+        image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&q=80&w=800",
+        compatibility: "Various Models (W205, W213)",
+        category: "Brakes",
+        description: "High-performance front brake disc for optimal stopping power.",
+        createdAt: new Date()
+      },
+      {
+        name: "E-Class W213 LED Headlight",
+        partNumber: "A2139064104",
+        price: 25000,
+        image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=800",
+        compatibility: "W213 (2016-2020)",
+        category: "Electrical & Lighting",
+        description: "Genuine high-performance LED headlight for Mercedes-Benz E-Class.",
+        createdAt: new Date()
+      },
+      {
+        name: "AMG Performance Brake Pads",
         partNumber: "A0004206000",
         price: 8500,
         image: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&q=80&w=800",
         compatibility: "C63, E63, S63 AMG Models",
         category: "Brakes",
-        description: "Original AMG brake pads for superior stopping power and durability. Front axle set.",
+        description: "Original AMG brake pads for superior stopping power.",
         createdAt: new Date()
       },
       {
@@ -148,86 +191,92 @@ export default function Admin() {
         image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=800",
         compatibility: "M270, M274 Engines",
         category: "Oil & Fluids",
-        description: "Genuine oil filter for optimal engine protection and performance.",
+        description: "Genuine oil filter for optimal engine protection.",
         createdAt: new Date()
       },
       {
-        name: "Air Suspension Compressor",
-        partNumber: "A2213201704",
-        price: 18000,
-        image: "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?auto=format&fit=crop&q=80&w=800",
-        compatibility: "S-Class W221",
-        category: "Suspension",
-        description: "OEM Air suspension compressor pump for Mercedes S-Class W221.",
-        createdAt: new Date()
-      },
-      {
-        name: "Turbocharger Assembly",
-        partNumber: "A2710903680",
-        price: 42000,
+        name: "Mercedes-Benz Fuel Injector",
+        partNumber: "A2780700687",
+        price: 15800,
         image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=800",
-        compatibility: "C-Class W204 C250",
+        compatibility: "M278, M157 V8 Engines",
         category: "Engine & Drivetrain",
-        description: "Genuine turbocharger for M271 EVO engines. High boost efficiency.",
+        description: "Precision fuel injector for direct injection Mercedes engines.",
         createdAt: new Date()
       },
       {
-        name: "Spark Plug Set (4pcs)",
-        partNumber: "A0041598103",
-        price: 2400,
-        image: "https://images.unsplash.com/photo-1635437536607-b8572f443763?auto=format&fit=crop&q=80&w=800",
-        compatibility: "Various Models (M270, M274)",
-        category: "Engine & Drivetrain",
-        description: "Iridium spark plugs for better ignition and fuel efficiency.",
+        name: "S-Class W222 Air Suspension Strut",
+        partNumber: "A2223204813",
+        price: 42000,
+        image: "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=800",
+        compatibility: "S-Class W222 (2013-2020)",
+        category: "Suspension",
+        description: "Genuine Airmatic suspension strut for ultimate comfort.",
+        createdAt: new Date()
+      },
+      {
+        name: "Mercedes-Benz Star Emblem (Illuminated)",
+        partNumber: "A1668170316",
+        price: 5500,
+        image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800",
+        compatibility: "Various Models (GLE, GLS, C, E)",
+        category: "Exterior",
+        description: "Illuminated front grille star emblem for a modern look.",
         createdAt: new Date()
       }
     ];
 
-    if (window.confirm('Add 6 genuine Mercedes parts to the catalog?')) {
+    if (window.confirm('Add genuine Mercedes parts to the collection?')) {
+      setLoading(true);
       try {
+        const productsCol = collection(db, 'products');
         for (const sample of samples) {
-          await addDoc(collection(db, 'products'), sample);
+          await addDoc(productsCol, sample);
         }
-        alert('Sample data added successfully!');
-      } catch (error) {
+        alert('Collection seeded successfully.');
+      } catch (error: any) {
         console.error("Error seeding data:", error);
-        alert('Error seeding data. Check console.');
+        alert(`Error seeding data: ${error.message}`);
+      } finally {
+        setLoading(false);
       }
     }
   };
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-black flex items-center justify-center px-6">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-zinc-900 border border-zinc-800 p-8 rounded-sm w-full max-w-md"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-zinc-900/10 border border-white/5 p-12 w-full max-w-md backdrop-blur-sm"
         >
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center">
-              <ShieldAlert className="text-white" size={32} />
+          <div className="flex justify-center mb-10">
+            <div className="w-20 h-20 border border-white/5 rounded-full flex items-center justify-center relative">
+              <ShieldAlert className="text-zinc-700" size={32} strokeWidth={1} />
+              <div className="absolute inset-0 border border-white/10 rounded-full animate-pulse opacity-20" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-white text-center mb-2 tracking-tight">Admin Portal</h1>
-          <p className="text-zinc-500 text-center text-sm mb-8">Access restricted to authorized personnel.</p>
+          <h1 className="text-3xl font-light text-white text-center mb-4 tracking-tighter">Portal Access</h1>
+          <p className="text-zinc-600 text-center text-[10px] font-bold uppercase tracking-[0.3em] mb-12">Authorized Personnel Only</p>
           
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-8">
             <div>
-              <label className="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Password</label>
+              <label className="block text-zinc-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-3">Security Key</label>
               <input
                 type="password"
-                className="w-full bg-black border border-zinc-700 text-white px-4 py-3 rounded-sm focus:outline-none focus:border-white transition-colors"
+                className="w-full bg-transparent border-b border-white/10 text-white px-0 py-4 focus:outline-none focus:border-white transition-all font-light tracking-widest"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter admin password..."
+                placeholder="••••••••"
               />
             </div>
             <button 
               type="submit"
-              className="w-full bg-white text-black py-3 rounded-sm font-bold text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+              className="group relative w-full bg-white text-black py-5 overflow-hidden transition-all duration-500"
             >
-              Login
+              <div className="absolute inset-0 bg-zinc-200 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+              <span className="relative z-10 text-[10px] font-bold uppercase tracking-[0.3em]">Authenticate</span>
             </button>
           </form>
         </motion.div>
@@ -236,34 +285,34 @@ export default function Admin() {
   }
 
   return (
-    <div className="py-12 bg-zinc-950 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-12">
+    <div className="py-24 bg-black min-h-screen">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row items-baseline justify-between mb-20 gap-8">
           <div>
-            <h1 className="text-4xl font-bold text-white tracking-tight mb-2">Inventory Management</h1>
-            <p className="text-zinc-500 text-sm">Add, update, or remove parts from the catalog.</p>
+            <h1 className="text-6xl font-light text-white tracking-tighter mb-4">Inventory</h1>
+            <p className="text-zinc-600 text-[10px] font-bold uppercase tracking-[0.4em]">Precision Management System</p>
           </div>
           <div className="flex gap-4">
             <button 
               onClick={seedSampleData}
-              className="border border-zinc-800 text-zinc-400 px-6 py-2 rounded-sm font-bold text-sm uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-all"
+              className="text-zinc-600 hover:text-white transition-all text-[9px] font-bold uppercase tracking-[0.3em] border border-white/5 px-8 py-4 hover:border-white/20"
             >
-              Seed Data
+              Seed Collection
             </button>
             <button 
               onClick={() => {
                 setIsAdding(!isAdding);
                 if (isAdding) setEditingId(null);
               }}
-              className="bg-white text-black px-6 py-2 rounded-sm font-bold text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2"
+              className="bg-white text-black px-8 py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-zinc-200 transition-all flex items-center gap-3"
             >
-              {isAdding ? 'Cancel' : <><Plus size={18} /> Add Product</>}
+              {isAdding ? 'Cancel' : <><Plus size={14} /> New Entry</>}
             </button>
             <button 
               onClick={handleLogout}
-              className="border border-zinc-800 text-zinc-500 px-6 py-2 rounded-sm font-bold text-sm uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-all flex items-center gap-2"
+              className="text-zinc-800 hover:text-red-500 transition-all p-4"
             >
-              <LogOut size={18} /> Logout
+              <LogOut size={20} strokeWidth={1.5} />
             </button>
           </div>
         </div>
@@ -271,101 +320,92 @@ export default function Admin() {
         <AnimatePresence>
           {isAdding && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="bg-zinc-900 border border-zinc-800 p-8 rounded-sm mb-12 overflow-hidden"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-zinc-900/10 border border-white/5 p-12 mb-20 overflow-hidden"
             >
-              <h2 className="text-xl font-bold text-white mb-6 tracking-tight">
-                {editingId ? 'Edit Product' : 'Add New Product'}
+              <h2 className="text-2xl font-light text-white mb-12 tracking-tight">
+                {editingId ? 'Edit Component' : 'New Component Entry'}
               </h2>
-              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="space-y-8">
                   <div>
-                    <label className="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Part Name</label>
-                    <div className="relative">
-                      <Package className="absolute left-3 top-3 text-zinc-600" size={18} />
-                      <input
-                        required
-                        type="text"
-                        className="w-full bg-black border border-zinc-700 text-white pl-10 pr-4 py-3 rounded-sm focus:outline-none focus:border-white"
-                        value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      />
-                    </div>
+                    <label className="block text-zinc-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-3">Component Name</label>
+                    <input
+                      required
+                      type="text"
+                      className="w-full bg-transparent border-b border-white/10 text-white px-0 py-4 focus:outline-none focus:border-white transition-all font-light"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    />
                   </div>
                   <div>
-                    <label className="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Part Number</label>
-                    <div className="relative">
-                      <Tag className="absolute left-3 top-3 text-zinc-600" size={18} />
+                    <label className="block text-zinc-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-3">Part Number</label>
+                    <input
+                      required
+                      type="text"
+                      className="w-full bg-transparent border-b border-white/10 text-white px-0 py-4 focus:outline-none focus:border-white transition-all font-light tracking-widest"
+                      value={formData.partNumber}
+                      onChange={(e) => setFormData({...formData, partNumber: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-12">
+                    <div>
+                      <label className="block text-zinc-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-3">Value (EGP)</label>
                       <input
                         required
-                        type="text"
-                        className="w-full bg-black border border-zinc-700 text-white pl-10 pr-4 py-3 rounded-sm focus:outline-none focus:border-white"
-                        value={formData.partNumber}
-                        onChange={(e) => setFormData({...formData, partNumber: e.target.value})}
+                        type="number"
+                        className="w-full bg-transparent border-b border-white/10 text-white px-0 py-4 focus:outline-none focus:border-white transition-all font-light"
+                        value={formData.price}
+                        onChange={(e) => setFormData({...formData, price: Number(e.target.value)})}
                       />
                     </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Price (EGP)</label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-3 text-zinc-600 text-sm font-bold">ج.م</span>
-                        <input
-                          required
-                          type="number"
-                          className="w-full bg-black border border-zinc-700 text-white pl-12 pr-4 py-3 rounded-sm focus:outline-none focus:border-white"
-                          value={formData.price}
-                          onChange={(e) => setFormData({...formData, price: Number(e.target.value)})}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Category</label>
+                      <label className="block text-zinc-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-3">Category</label>
                       <select
-                        className="w-full bg-black border border-zinc-700 text-white px-4 py-3 rounded-sm focus:outline-none focus:border-white h-[50px]"
+                        className="w-full bg-transparent border-b border-white/10 text-white px-0 py-4 focus:outline-none focus:border-white transition-all font-light appearance-none"
                         value={formData.category}
                         onChange={(e) => setFormData({...formData, category: e.target.value})}
                       >
                         {CATEGORIES.map(cat => (
-                          <option key={cat} value={cat}>{cat}</option>
+                          <option key={cat} value={cat} className="bg-black">{cat}</option>
                         ))}
                       </select>
                     </div>
                   </div>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-8">
                   <div>
-                    <label className="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Image URL</label>
-                    <div className="relative">
-                      <ImageIcon className="absolute left-3 top-3 text-zinc-600" size={18} />
+                    <label className="block text-zinc-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-3">Visual Asset (URL or Upload)</label>
+                    <div className="flex gap-4 mb-4">
                       <input
                         type="url"
-                        className="w-full bg-black border border-zinc-700 text-white pl-10 pr-4 py-3 rounded-sm focus:outline-none focus:border-white"
+                        className="flex-grow bg-transparent border-b border-white/10 text-white px-0 py-4 focus:outline-none focus:border-white transition-all font-light text-sm"
                         value={formData.image}
                         onChange={(e) => setFormData({...formData, image: e.target.value})}
                         placeholder="https://..."
                       />
+                      <label className="text-zinc-600 hover:text-white transition-colors cursor-pointer p-4">
+                        {uploading ? <Loader2 className="animate-spin" size={18} /> : <Upload size={18} strokeWidth={1.5} />}
+                        <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
+                      </label>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Compatibility</label>
-                    <div className="relative">
-                      <PenTool className="absolute left-3 top-3 text-zinc-600" size={18} />
-                      <input
-                        type="text"
-                        className="w-full bg-black border border-zinc-700 text-white pl-10 pr-4 py-3 rounded-sm focus:outline-none focus:border-white"
-                        value={formData.compatibility}
-                        onChange={(e) => setFormData({...formData, compatibility: e.target.value})}
-                        placeholder="e.g. W204, W212, W221"
-                      />
-                    </div>
+                    <label className="block text-zinc-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-3">Compatibility Matrix</label>
+                    <input
+                      type="text"
+                      className="w-full bg-transparent border-b border-white/10 text-white px-0 py-4 focus:outline-none focus:border-white transition-all font-light"
+                      value={formData.compatibility}
+                      onChange={(e) => setFormData({...formData, compatibility: e.target.value})}
+                      placeholder="e.g. W205, W213, W222"
+                    />
                   </div>
                   <div>
-                    <label className="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Description</label>
+                    <label className="block text-zinc-500 text-[9px] font-bold uppercase tracking-[0.2em] mb-3">Engineering Specifications</label>
                     <textarea
-                      className="w-full bg-black border border-zinc-700 text-white px-4 py-3 rounded-sm focus:outline-none focus:border-white h-[100px] resize-none"
+                      className="w-full bg-transparent border border-white/10 text-white p-6 focus:outline-none focus:border-white transition-all font-light h-32 resize-none"
                       value={formData.description}
                       onChange={(e) => setFormData({...formData, description: e.target.value})}
                     />
@@ -374,9 +414,12 @@ export default function Admin() {
                 <div className="md:col-span-2">
                   <button 
                     type="submit"
-                    className="w-full bg-white text-black py-4 rounded-sm font-bold text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                    className="group relative w-full bg-white text-black py-6 overflow-hidden transition-all duration-500"
                   >
-                    {editingId ? 'Update Product' : 'Save Product'}
+                    <div className="absolute inset-0 bg-zinc-200 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                    <span className="relative z-10 text-[10px] font-bold uppercase tracking-[0.3em]">
+                      {editingId ? 'Update Component' : 'Register Component'}
+                    </span>
                   </button>
                 </div>
               </form>
@@ -385,58 +428,60 @@ export default function Admin() {
         </AnimatePresence>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24">
-            <Loader2 className="text-white animate-spin mb-4" size={48} />
-            <p className="text-zinc-500 font-medium">Loading inventory...</p>
+          <div className="flex flex-col items-center justify-center py-40">
+            <div className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full animate-spin mb-8" />
+            <p className="text-zinc-700 text-[9px] font-bold uppercase tracking-[0.5em]">Synchronizing Inventory</p>
           </div>
         ) : (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-sm overflow-hidden">
+          <div className="bg-zinc-900/10 border border-white/5 overflow-hidden">
             <table className="w-full text-left">
-              <thead className="bg-black border-b border-zinc-800">
+              <thead className="bg-black/50 border-b border-white/5">
                 <tr>
-                  <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Product</th>
-                  <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Part #</th>
-                  <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Category</th>
-                  <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Price</th>
-                  <th className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest text-right">Actions</th>
+                  <th className="px-10 py-6 text-[9px] font-bold text-zinc-600 uppercase tracking-[0.3em]">Component</th>
+                  <th className="px-10 py-6 text-[9px] font-bold text-zinc-600 uppercase tracking-[0.3em]">Part #</th>
+                  <th className="px-10 py-6 text-[9px] font-bold text-zinc-600 uppercase tracking-[0.3em]">Category</th>
+                  <th className="px-10 py-6 text-[9px] font-bold text-zinc-600 uppercase tracking-[0.3em]">Value</th>
+                  <th className="px-10 py-6 text-[9px] font-bold text-zinc-600 uppercase tracking-[0.3em] text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y divide-white/5">
                 {products.map((product) => (
-                  <tr key={product.id} className="hover:bg-zinc-800/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-black rounded-sm overflow-hidden flex-shrink-0">
+                  <tr key={product.id} className="hover:bg-zinc-900/20 transition-colors group">
+                    <td className="px-10 py-8">
+                      <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-black border border-white/5 overflow-hidden flex-shrink-0 relative">
                           <img 
-                            src={product.image || 'https://picsum.photos/seed/part/100/100'} 
+                            src={product.image || 'https://picsum.photos/seed/part/200/200'} 
                             alt="" 
-                            className="w-full h-full object-cover opacity-80"
+                            className="w-full h-full object-cover grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700"
                             referrerPolicy="no-referrer"
                           />
                         </div>
-                        <div className="text-white font-bold text-sm">{product.name}</div>
+                        <div className="text-white font-light text-lg tracking-tight">{product.name}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-zinc-400 text-sm">{product.partNumber}</td>
-                    <td className="px-6 py-4">
-                      <span className="text-[10px] font-bold text-zinc-500 border border-zinc-700 px-2 py-1 rounded-full uppercase">
+                    <td className="px-10 py-8 text-zinc-600 text-xs font-light tracking-widest">{product.partNumber}</td>
+                    <td className="px-10 py-8">
+                      <span className="text-[8px] font-bold text-zinc-700 border border-zinc-800 px-3 py-1.5 rounded-full uppercase tracking-widest">
                         {product.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-white font-bold">{product.price.toLocaleString()} ج.م</td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
+                    <td className="px-10 py-8 text-white font-light text-lg tracking-tighter">
+                      {product.price.toLocaleString()} <span className="text-[9px] text-zinc-700 ml-1 uppercase">EGP</span>
+                    </td>
+                    <td className="px-10 py-8 text-right">
+                      <div className="flex justify-end gap-4">
                         <button 
                           onClick={() => startEdit(product)}
-                          className="p-2 text-zinc-500 hover:text-white transition-colors"
+                          className="text-zinc-800 hover:text-white transition-colors p-2"
                         >
-                          <Edit2 size={18} />
+                          <Edit2 size={16} strokeWidth={1.5} />
                         </button>
                         <button 
                           onClick={() => handleDelete(product.id!)}
-                          className="p-2 text-zinc-500 hover:text-red-500 transition-colors"
+                          className="text-zinc-800 hover:text-red-500 transition-colors p-2"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} strokeWidth={1.5} />
                         </button>
                       </div>
                     </td>

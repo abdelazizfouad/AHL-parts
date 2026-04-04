@@ -11,10 +11,12 @@ export interface VINInfo {
   transmission: string;
   bodyStyle: string;
   recommendedParts: string[];
+  isPartNumber?: boolean;
   partInfo?: {
     name: string;
     description: string;
     estimatedPriceRange: string;
+    partNumber: string;
   };
 }
 
@@ -25,10 +27,11 @@ export async function decodeVIN(input: string): Promise<VINInfo | null> {
 
   try {
     const prompt = isVIN 
-      ? `Decode this Mercedes-Benz VIN: ${input}. Provide real technical details. 
-         If you can't find the exact car, provide the most likely details for a Mercedes with this VIN pattern.`
+      ? `Decode this Mercedes-Benz VIN: ${input}. Provide real technical details (Year, Model, Engine, Transmission, Trim, Body Style). 
+         Be as accurate as possible for Mercedes-Benz vehicles. If it's a valid VIN, provide the exact model series (e.g. W213, W205).`
       : `Provide technical details for this Mercedes-Benz part number: ${input}. 
-         Explain what this part is and which models it fits.`;
+         Identify the part name, technical description, and exactly which Mercedes models (chassis codes like W204, W212, W222) it fits. 
+         Provide an estimated price range in EGP for the Egyptian market.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -43,10 +46,12 @@ export async function decodeVIN(input: string): Promise<VINInfo | null> {
         "transmission": "e.g. 9G-TRONIC",
         "bodyStyle": "e.g. Sedan",
         "recommendedParts": ["Brake Pads", "Oil Filter", "Air Filter"],
+        "isPartNumber": ${!isVIN},
         "partInfo": {
           "name": "Name of the part if searching by part number",
           "description": "Technical description",
-          "estimatedPriceRange": "e.g. 5000 - 8000 EGP"
+          "estimatedPriceRange": "e.g. 5000 - 8000 EGP",
+          "partNumber": "${input}"
         }
       }
       If the input is invalid or not related to Mercedes-Benz, return an error object.`,
